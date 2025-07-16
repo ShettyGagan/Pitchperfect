@@ -1,4 +1,6 @@
-# Logs
+# ========================
+# Logs & Debug files
+# ========================
 logs
 *.log
 npm-debug.log*
@@ -7,21 +9,54 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# ========================
+# Node (React/Vite) Artifacts
+# ========================
+node_modules/
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# ========================
+# Python (Flask or FastAPI) Environment
+# ========================
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+
+# ========================
+# Local File Uploads
+# ========================
+video_uploads/
+
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.*
+
+# ========================
+# OS Generated Files
+# ========================
 .DS_Store
+Thumbs.db
+
+# ========================
+# Editor/IDE files
+# ========================
+.vscode/
+!.vscode/extensions.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-/venv
-/video_uploads
+# ========================
+# Coverage Reports
+# ========================
+coverage/
+*.lcov

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Upload, FileVideo, Bot, Info, FileText, Zap, Shield, TrendingUp, Clock } from 'lucide-react';
 import axios from "axios"
-import {useDispatch} from 'react-redux';
-import {setAnalysisData} from '../store/analysisSlice';
+import { useDispatch } from 'react-redux';
+import { setAnalysisData } from '../store/analysisSlice';
 import { useNavigate } from 'react-router-dom';
 
 export const Home = () => {
@@ -25,49 +25,49 @@ export const Home = () => {
     if (!selectedFile) return;
 
     setIsUploading(true);
-    
+
     // Simulate API call
-  try{
+    try {
 
-    const formdata=new FormData();
-    formdata.append("file",selectedFile)
+      const formdata = new FormData();
+      formdata.append("file", selectedFile)
 
-    const upload= await axios.post("http://localhost:1010/upload",formdata,{
-      headers:{
-        "Content-Type": "multipart/form-data",
+      const upload = await axios.post("http://127.0.0.1:8000/upload", formdata, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      });
+
+      const video_key = upload.data.key;
+
+      //analysing video
+      const analysisResponse = await axios.post("http://127.0.0.1:8000/analyze", {
+        tmp_video_key: video_key,
+      });
+
+      const analysisreport = analysisResponse.data;
+
+
+
+      dispatch(setAnalysisData(analysisreport));
+
+      if (
+        analysisreport &&
+        analysisreport.voice_analysis_response &&
+        analysisreport.voice_analysis_response.transcription
+      ) {
+        setTranscription(JSON.stringify(analysisreport.voice_analysis_response.transcription, null, 2));
       }
-    });
+      else {
+        console.warn("Transcription missing in analysis response", analysisreport);
+      }
 
-    const video_path=upload.data.file_path;
-
-    //analysing video
-    const analysisResponse=await axios.post("http://localhost:1010/analyze",{
-      video_url:video_path,
-    });
-
-    const analysisreport=analysisResponse.data;
-
-    
-
-  dispatch(setAnalysisData(analysisreport));
-
-  if(
-    analysisreport &&
-    analysisreport.voice_analysis_response &&
-    analysisreport.voice_analysis_response.transcription
-    ){
-    setTranscription(JSON.stringify(analysisreport.voice_analysis_response.transcription,null,2));
+    } catch (error) {
+      console.error("Upload or analysis error:", error);
+      alert("Something went wrong: " + (error.response?.data?.error || error.message));
+    } finally {
+      setIsUploading(false);
     }
-  else {
-  console.warn("Transcription missing in analysis response", analysisreport);
-}
-
-  }catch (error) {
-    console.error("Upload or analysis error:", error);
-    alert("Something went wrong: " + (error.response?.data?.error || error.message));
-  } finally {
-    setIsUploading(false);
-  }
   };
 
   return (
@@ -85,7 +85,7 @@ export const Home = () => {
             Skills
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Transform your speaking abilities with enterprise-grade AI analysis. Get actionable insights 
+            Transform your speaking abilities with enterprise-grade AI analysis. Get actionable insights
             on delivery, engagement, and impact to become a more confident presenter.
           </p>
         </div>
@@ -98,7 +98,7 @@ export const Home = () => {
             </div>
             <h3 className="text-xl font-semibold text-slate-900 mb-3">Advanced AI Engine</h3>
             <p className="text-slate-600 leading-relaxed">
-              Cutting-edge computer vision and NLP technology analyzes facial expressions, 
+              Cutting-edge computer vision and NLP technology analyzes facial expressions,
               voice patterns, and content structure with 95% accuracy.
             </p>
           </div>
@@ -109,7 +109,7 @@ export const Home = () => {
             </div>
             <h3 className="text-xl font-semibold text-slate-900 mb-3">Actionable Insights</h3>
             <p className="text-slate-600 leading-relaxed">
-              Receive detailed feedback with specific recommendations to improve your 
+              Receive detailed feedback with specific recommendations to improve your
               speaking confidence, clarity, and audience engagement.
             </p>
           </div>
@@ -120,7 +120,7 @@ export const Home = () => {
             </div>
             <h3 className="text-xl font-semibold text-slate-900 mb-3">Enterprise Security</h3>
             <p className="text-slate-600 leading-relaxed">
-              Your presentations are processed with bank-level encryption and 
+              Your presentations are processed with bank-level encryption and
               automatically deleted after analysis for complete privacy protection.
             </p>
           </div>
@@ -137,7 +137,7 @@ export const Home = () => {
               <p className="text-slate-600 mt-1">Get professional analysis in under 2 minutes</p>
             </div>
           </div>
-          
+
           <div className="space-y-8">
             <div className="relative border-2 border-dashed border-slate-300 rounded-2xl p-16 text-center hover:border-violet-400 hover:bg-gradient-to-br hover:from-violet-50/50 hover:to-indigo-50/50 transition-all duration-300 group">
               <input
@@ -210,7 +210,7 @@ export const Home = () => {
               Our AI analyzes multiple dimensions of your presentation to provide comprehensive feedback
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="bg-white/10 backdrop-blur-sm w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -221,7 +221,7 @@ export const Home = () => {
                 Secure upload with automatic transcription and video analysis initialization
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="bg-white/10 backdrop-blur-sm w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Bot className="w-8 h-8 text-blue-400" />
@@ -231,7 +231,7 @@ export const Home = () => {
                 Multi-modal AI examines facial expressions, voice patterns, and content structure
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="bg-white/10 backdrop-blur-sm w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <TrendingUp className="w-8 h-8 text-violet-400" />
@@ -256,13 +256,13 @@ export const Home = () => {
                 <p className="text-slate-600 mt-1">AI-generated transcript with 98% accuracy</p>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-2xl p-8 border border-slate-200/50 mb-8">
               <p className="text-slate-700 leading-relaxed text-lg font-medium">
                 "{transcription}"
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/50 rounded-full mb-6">
                 <div className="w-3 h-3 bg-emerald-500 rounded-full mr-3 animate-pulse"></div>
@@ -270,11 +270,11 @@ export const Home = () => {
                 <Clock className="w-4 h-4 text-emerald-600 ml-2" />
               </div>
               <p className="text-slate-600 mb-8 text-lg">
-                Your presentation has been successfully analyzed with enterprise-grade AI. 
+                Your presentation has been successfully analyzed with enterprise-grade AI.
                 View comprehensive insights and personalized recommendations.
               </p>
               <a
-                onClick={()=>navigate('/feedback')}
+                onClick={() => navigate('/feedback')}
                 className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl font-semibold hover:from-slate-800 hover:to-slate-700 transition-all duration-200 shadow-lg shadow-slate-900/25 text-lg"
               >
                 <TrendingUp className="w-5 h-5 mr-2" />

@@ -1,17 +1,20 @@
 from agno.agent import Agent,RunResponse
-from agno.models.google import Gemini
+from agno.models.groq import Groq
 from backend.tools.facial_expression import analyze_facial_expression as facial_expression_tool
 from agno.utils.pprint import pprint_run_response
+from backend.toon_util import structure_template_pydantic
+from backend.models.model import FacialExpressionResponse
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
+_response_template = structure_template_pydantic(FacialExpressionResponse)
 #facial expression agent
 
 facial_expression_agent = Agent(
     name="facial_expression_agent",
-    model=Gemini(id="gemini-2.5-pro"),
+    model=Groq(id="llama-3.3-70b-versatile"),
     tools=[facial_expression_tool],
     description=
     '''
@@ -23,20 +26,17 @@ facial_expression_agent = Agent(
         "Your task is to analyze the facial expressions in the video to detect emotions and engagement.",
         "You will analyze the video frame by frame to detect and classify facial expressions such as happiness, sadness, anger, surprise, and neutrality.",
         "You will also analyze the engagement metrics such as eye contact count and smile count",
-        "The response MUST be in the following JSON format:",
-        "{",
-            '"emotion_timeline": [emotion_timeline]',
-                "engagement_metrics: {",
-                    '"eye_contact_frequency": [eye contact_frequency]',
-                    '"smile_frequency": [smile_frequency]',
-                "}",
-        "}",
-        "The response MUST be in proper JSON format with keys and values in double quotes.",
-        "The final response MUST not include any other text or anything else other than the JSON response.",
-        "The final response MUST not include any backslashes in the JSON response.",
-        "The final response MUST be a valid JSON object and MUST not have any unterminated strings in the JSON response."
+        "Return your response ONLY in TOON format using the following template:",
+        _response_template,
+        "",
+        "Rules:",
+        "  • Do NOT include any text outside the TOON response.",
+        "  • Do NOT wrap the output in JSON, markdown, or code fences.",
+        "  • Do NOT include backslashes in the response.",
+        "  • emotion_timeline must be a TOON tabular array with columns: timestamp, emotion.",
+        "  • engagement_metrics must be TOON key-value pairs.",
     ],
-    markdown=True,
+    markdown=False,
     show_tool_calls=True,
     debug_mode=True
 )

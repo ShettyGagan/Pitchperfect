@@ -27,9 +27,21 @@ __pycache__/
 *.db
 
 # ========================
-# Local File Uploads
+# Local File Uploads & Media
 # ========================
 video_uploads/
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.wav
+*.mp3
+
+# ========================
+# Scratch / Test Scripts
+# ========================
+test.py
 
 # ========================
 # Environment Variables

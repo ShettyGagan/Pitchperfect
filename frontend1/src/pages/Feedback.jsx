@@ -6,7 +6,7 @@ import { EmotionPieChart } from '../components/EmotionPieChart';
 import { TimelineChart } from '../components/TimelineChart';
 import { VoiceMetrics } from '../components/VoiceMetrics';
 import { StrengthsCard } from '../components/StrengthsCard';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import { clearAnalysisData } from '../store/analysisSlice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 const processScoresData = (scores) => {
   return Object.entries(scores).map(([key, value]) => ({
     metric: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-    score: value ,
+    score: value,
     maxScore: 5
   }));
 };
@@ -24,13 +24,13 @@ const processScoresData = (scores) => {
 
 
 export const Feedback = () => {
-  
+
   const analysisData = useSelector((state) => state.analysis.data);
 
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
-  const dispatch=useDispatch();
-  const handleClearData=()=>{
+  const dispatch = useDispatch();
+  const handleClearData = () => {
     dispatch(clearAnalysisData());
     navigate('/');
 
@@ -125,22 +125,22 @@ export const Feedback = () => {
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={scoresData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  dataKey="metric" 
-                  stroke="#64748b" 
+                <XAxis
+                  dataKey="metric"
+                  stroke="#64748b"
                   fontSize={12}
                   angle={-45}
                   textAnchor="end"
                   interval={0}
                 />
                 <YAxis domain={[0, 5]} stroke="#64748b" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'white', 
-                    border: '1px solid #e2e8f0', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '12px',
                     boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
-                  }} 
+                  }}
                 />
                 <Bar dataKey="score" fill="#7c3aed" radius={[4, 4, 0, 0]} />
               </BarChart>

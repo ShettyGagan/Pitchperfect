@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Upload, FileVideo, Bot, Info, FileText, Zap, Shield, TrendingUp, Clock } from 'lucide-react';
 import axios from "axios"
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setAnalysisData } from '../store/analysisSlice';
 import { useNavigate } from 'react-router-dom';
 
 export const Home = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const token = useSelector((state) => state.auth?.token);
   const [selectedFile, setSelectedFile] = useState(null);
   const [transcription, setTranscription] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -35,6 +36,7 @@ export const Home = () => {
       const upload = await axios.post("http://127.0.0.1:8000/upload", formdata, {
         headers: {
           "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${token}`,
         }
       });
 
@@ -43,6 +45,8 @@ export const Home = () => {
       //analysing video
       const analysisResponse = await axios.post("http://127.0.0.1:8000/analyze", {
         tmp_video_key: video_key,
+      }, {
+        headers: { "Authorization": `Bearer ${token}` }
       });
 
       const analysisreport = analysisResponse.data;

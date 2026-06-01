@@ -1,63 +1,8 @@
-# import json
-# import pathlib
-# from fastapi import FastAPI, UploadFile,File
-# import os
-# import shutil
-# from dotenv import load_dotenv
-# load_dotenv()  # Load .env file at startup — must be before any agent imports
-# from fastapi.middleware.cors import CORSMiddleware
-# from fastapi.encoders import jsonable_encoder
-# from fastapi.responses import JSONResponse
-# from pydantic import BaseModel
-# from agno.agent import RunResponse
-# from backend.agents.teamup_agents import final_agent
-# import re
+from dotenv import load_dotenv
+load_dotenv()
 
-# app = FastAPI()
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-# class AnalysisRequest(BaseModel):
-#     video_url: str
-
-
-# @app.post("/upload")
-# async def upload_file(file:UploadFile=File(...)):
-#     upload_dir="video_uploads"
-#     os.makedirs(upload_dir,exist_ok=True)
-
-#     file_path=os.path.join(upload_dir,file.filename)
-#     with open(file_path,"wb") as f:
-#         shutil.copyfileobj(file.file,f)
-
-#     return {"file_path":str(pathlib.Path(file_path).resolve())}
-
-# @app.post("/analyze")
-# async def analyze(request: AnalysisRequest):
-#     video_path = pathlib.Path(request.video_url)
-
-#     if not video_path.exists():
-#         return JSONResponse(
-#             status_code=404,
-#             content={"error": f"File not found at the specified path: {video_path}"}
-#         )
-
-#     prompt = f"Analyze the following video: {video_path.as_posix()}"
-
-#     response:RunResponse=final_agent.run(prompt)
-#     json_compatible_response = jsonable_encoder(response.content)
-#     return JSONResponse(content=json_compatible_response)
-
-
-
-
-
+from fastapi import HTTPException
+from pydantic import EmailStr
 import pathlib
 import shutil
 import os
@@ -66,16 +11,24 @@ import uuid
 import tempfile
 
 import boto3
+from fastapi import Depends
+from typing import Annotated
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from backend.auth import hash_password,verify_password,get_current_user,create_access_token
+from backend.db import get_user_by_email,create_user,create_tables
 
 from agno.agent import RunResponse
 from backend.agents.teamup_agents import final_agent, parser_agent
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup():
+    await create_tables()
 
 app.add_middleware(
     CORSMiddleware,
@@ -112,9 +65,36 @@ def delete_from_b2(key:str):
 class AnalysisRequest(BaseModel):
     tmp_video_key: str
 
+class AuthRequest(BaseModel):
+    email:EmailStr
+    password:str
+
+CurrentUser=Annotated[dict,Depends(get_current_user)]
+
+
+@app.post("/auth/register")
+async def register(body:AuthRequest):
+    if await get_user_by_email(body.email):
+        raise HTTPException(status_code=400, detail="User already exists")
+    
+    hashed_password=hash_password(body.password)
+    user = await create_user(body.email,hashed_password)
+    token = create_access_token(user['id'],user['email'])
+    return {"access_token":token,"token_type":"bearer"}
+
+
+@app.post("/auth/login")
+async def login(body:AuthRequest):
+    user = await get_user_by_email(body.email)
+    if not user or not verify_password(body.password,user['password']):
+        raise HTTPException(status_code=401,detail="Invalid Credentials")
+    
+    access_token = create_access_token(user['id'],user['email'])
+    return {"access_token":access_token,"token_type":"bearer"}
+
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(user: CurrentUser, file: UploadFile = File(...)):
     # upload_dir = "video_uploads"
     # os.makedirs(upload_dir, exist_ok=True)
 
@@ -130,7 +110,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 
 @app.post("/analyze")
-async def analyze(request: AnalysisRequest):
+async def analyze(request: AnalysisRequest,user:CurrentUser):
     # video_path = pathlib.Path(request.video_url)
 
     # if not video_path.exists():

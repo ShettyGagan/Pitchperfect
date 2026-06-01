@@ -1,5 +1,6 @@
 import {combineReducers, configureStore} from '@reduxjs/toolkit';
 import analysisReducer from './analysisSlice';
+import authReducer from './authSlice';
 import {
   persistStore,
   persistReducer,
@@ -18,12 +19,13 @@ const persistConfig={
   key:'root',
   version:1,
   storage,
-  whitelist: ['analysis'],
+  whitelist: ['analysis', 'auth'],
 
 }
 
 const rootReducer=combineReducers({
   analysis:analysisReducer,
+  auth:authReducer,
 });
 
 const persistedReducer=persistReducer(persistConfig,rootReducer);

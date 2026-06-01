@@ -1,9 +1,21 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Mic, BarChart3, Sparkles } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Mic, BarChart3, Sparkles, LogOut } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/authSlice';
+import { clearAnalysisData } from '../store/analysisSlice';
 
 export const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth?.user);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(clearAnalysisData());
+    navigate('/auth');
+  };
 
   return (
     <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
@@ -25,7 +37,7 @@ export const Navbar = () => {
               <div className="text-xs text-slate-500 font-medium -mt-1">AI Platform</div>
             </div>
           </Link>
-          
+
           <div className="flex items-center space-x-1">
             <Link
               to="/"
@@ -48,6 +60,26 @@ export const Navbar = () => {
               <BarChart3 className="w-4 h-4" />
               <span>Analytics</span>
             </Link>
+
+            {/* Divider */}
+            <div className="w-px h-5 bg-slate-200 mx-2" />
+
+            {/* User email */}
+            {user?.email && (
+              <span className="text-xs text-slate-500 font-medium max-w-[140px] truncate hidden sm:block">
+                {user.email}
+              </span>
+            )}
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200 font-medium text-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:block">Sign out</span>
+            </button>
           </div>
         </div>
       </div>
